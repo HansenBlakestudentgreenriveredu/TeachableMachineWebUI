@@ -36,6 +36,8 @@
     <button id="toggleButton" class="button" onclick="toggleCamera()">Start</button>
     <div id="webcam-container"></div>
     <div id="label-container"></div>
+    <div class="result">
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
     <script type="text/javascript">
@@ -43,7 +45,7 @@
         // https://github.com/googlecreativelab/teachablemachine-community/tree/master/libraries/image
 
         // TODO: the link to your model provided by Teachable Machine export panel
-        const URL = "https://teachablemachine.withgoogle.com/models/YOUR_MODEL_URL/";
+        const URL = "https://teachablemachine.withgoogle.com/models/yWxxX4-a4/";
 
         let model, webcam, labelContainer, maxPredictions;
         let isRunning = false;
@@ -80,7 +82,11 @@
         async function loop() {
             if (!isRunning) return;
             webcam.update(); // update the webcam frame
-            await predict();
+
+            const found = await predict();
+            if (found === true) {
+                return;
+            }
             animationFrameId = window.requestAnimationFrame(loop);
         }
 
@@ -88,6 +94,19 @@
         async function predict() {
             // predict can take in an image, video or canvas html element
             const prediction = await model.predict(webcam.canvas);
+            if(prediction[1].probability > 0.7) {
+                console.log("Hello there person!");
+                // Find the div with class "result"
+                const resultDiv = document.querySelector(".result");
+
+                // Create the h1 element
+                const heading = document.createElement("h1");
+                heading.textContent = "Is that a person I see!";
+
+                // Append the heading to the div
+                resultDiv.appendChild(heading);
+                return true;
+            } 
             for (let i = 0; i < maxPredictions; i++) {
                 const classPrediction =
                     prediction[i].className + ": " + prediction[i].probability.toFixed(2);
